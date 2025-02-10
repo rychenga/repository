@@ -17,3 +17,12 @@ go run main.go model.go
 - 讀取 SQL File功能
 - MySQL
 - PostgreSQL
+
+## Sample Data
+### 資料表 `book` 有以下資料：
+
+| name   | book_name  |
+|--------|------------|
+| A      | A_BOOK     |
+| B      | B_BOOK     |
+

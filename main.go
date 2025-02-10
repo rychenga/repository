@@ -16,7 +16,7 @@ type SqlFiles struct {
 	embedFiles embed.FS
 }
 
-// MySQL 連線資訊（請根據你的環境修改）
+// MySQL 連線資訊
 const (
 	username = "root"
 	password = "Dev127336"
