@@ -30,17 +30,7 @@ func getDSN() string {
 		username, password, hostname, dbname)
 }
 
-func main() {
-	fmt.Println("Hello, world!")
-	// 讀取sql file功能
-	s := SqlFiles{embedFiles: embedFiles}
-	f, err := s.embedFiles.ReadFile("sql/demo.sql")
-	if err != nil {
-		fmt.Println(err)
-	}
-	fmt.Println(string(f))
-	sqlQuery := string(f)
-
+func QueryMySql(sqlQuery string) []map[string]interface{} {
 	// 連接 MySQL (GORM)
 	dsn := getDSN()
 	db, err := gorm.Open(mysql.Open(dsn), &gorm.Config{})
@@ -62,5 +52,22 @@ func main() {
 	for _, row := range results {
 		fmt.Println(row)
 	}
+	return results
+}
+
+func main() {
+	fmt.Println("Hello, world!")
+	// 讀取sql file功能
+	s := SqlFiles{embedFiles: embedFiles}
+	f, err := s.embedFiles.ReadFile("sql/demo.sql")
+	if err != nil {
+		fmt.Println(err)
+	}
+	fmt.Println(string(f))
+	sqlQuery := string(f)
+
+	//mysql 功能
+	r := QueryMySql(sqlQuery)
+	fmt.Println(r) //再一次顯示內容
 
 }

@@ -1,5 +1,5 @@
  # repository Portal
-這個專案Golang的連線 Database 能實作
+這個專案Golang的連線 Database 功能實作
 
 ## DabaBase
 - PostgreSQL
