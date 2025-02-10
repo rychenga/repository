@@ -6,8 +6,9 @@ import (
 	"fmt"
 	"log"
 
-	"github.com/jackc/pgx/v5/pgxpool"
+	"github.com/jackc/pgx/v4/pgxpool"
 	"gorm.io/driver/mysql"
+	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 )
 
@@ -26,7 +27,6 @@ const (
 	mysqldbname   = "demo"
 	pgusername    = "admin"
 	pgpassword    = "pg123"
-	pghostname    = "127.0.0.1:5432"
 	pgdbname      = "demo"
 )
 
@@ -34,6 +34,12 @@ const (
 func getMySqlDSN() string {
 	return fmt.Sprintf("%s:%s@tcp(%s)/%s?charset=utf8mb4&parseTime=True&loc=Local",
 		mysqlusername, mysqlpassword, mysqlhostname, mysqldbname)
+}
+
+// 通用函數：獲取 PostgreSQL DSN
+func getPostgresDSN() string {
+	return fmt.Sprintf("host=%s user=%s password=%s dbname=%s port=5432 sslmode=disable TimeZone=Asia/Taipei",
+		"127.0.0.1", pgusername, pgpassword, pgdbname)
 }
 
 func QueryMySql(sqlQuery string) []map[string]interface{} {
@@ -61,37 +67,52 @@ func QueryMySql(sqlQuery string) []map[string]interface{} {
 	return results
 }
 
+// QueryPostgresSQL 查詢 PostgreSQL (pgx)
 func QueryPostgresSQL(sqlQuery2 string) {
-	// 連線到 PostgreSQL
-	databaseUrl := "postgres://" + pgusername + ":" + pgpassword + "@" + pghostname + "/" + pgdbname
-	// fmt.Println(databaseUrl)
-
-	dbpool, err := pgxpool.New(context.Background(), databaseUrl)
+	dsn := getPostgresDSN()
+	dbpool, err := pgxpool.Connect(context.Background(), dsn)
 	if err != nil {
-		log.Fatalf("Unable to connect to database: %v", err)
+		log.Fatalf("無法連接到 PostgreSQL: %v", err)
 	}
-	defer dbpool.Close() //關掉連線
+	defer dbpool.Close()
 
-	// 移除 SQL 結尾的分號（pgx 不接受帶分號的查詢）
-	sqlQuery2 = sqlQuery2[:len(sqlQuery2)-1]
-	// fmt.Println(sqlQuery2)
-
-	// 執行 SQL 查詢
-	var bookName = "D" // 替換成你的查詢條件
-	rows, err := dbpool.Query(context.Background(), sqlQuery2, bookName)
+	sqlQuery2 = sqlQuery2[:len(sqlQuery2)-1] // 移除分號
+	rows, err := dbpool.Query(context.Background(), sqlQuery2, "D")
 	if err != nil {
-		log.Fatalf("Query PostgreSQL failed: %v\n", err)
+		log.Fatalf("PostgreSQL 查詢失敗: %v", err)
 	}
 	defer rows.Close()
-	// 輸出查詢結果
-	fmt.Println("Query PostgreSQL Results:")
+
+	fmt.Println("PostgreSQL (pgx) 查詢結果:")
 	for rows.Next() {
 		var name string
 		var book_name string
 		if err := rows.Scan(&name, &book_name); err != nil {
-			log.Fatalf("Failed to scan row: %v\n", err)
+			log.Fatalf("結果掃描失敗: %v", err)
 		}
 		fmt.Printf("Name: %s, Book Name: %s\n", name, book_name)
+	}
+}
+
+// QueryPostgresSQL2 查詢 PostgreSQL (GORM)
+func QueryPostgresSQL2(sqlQuery2 string) {
+	dsn := getPostgresDSN()
+	db, err := gorm.Open(postgres.Open(dsn), &gorm.Config{})
+	if err != nil {
+		log.Fatalf("無法連接到 PostgreSQL: %v", err)
+	}
+
+	var results []struct {
+		Name     string `gorm:"column:name"`
+		BookName string `gorm:"column:book_name"`
+	}
+	if err := db.Raw(sqlQuery2, "D").Scan(&results).Error; err != nil {
+		log.Fatalf("PostgreSQL (GORM) 查詢失敗: %v", err)
+	}
+
+	fmt.Println("PostgreSQL (GORM) 查詢結果:")
+	for _, result := range results {
+		fmt.Printf("Name: %s, Book Name: %s\n", result.Name, result.BookName)
 	}
 }
 
@@ -117,6 +138,7 @@ func main() {
 	}
 	// fmt.Println(string(f2))
 	sqlQuery2 := string(f2)
-	QueryPostgresSQL(sqlQuery2) // 查詢PostgresSQL DB
+	QueryPostgresSQL(sqlQuery2)  // 查詢PostgresSQL DB
+	QueryPostgresSQL2(sqlQuery2) // GORM 方法
 
 }
