@@ -12,3 +12,8 @@ go run .
 或
 go run main.go model.go
 ```
+
+## 實作項目
+- 讀取 SQL File功能
+- MySQL
+- PostgreSQL
