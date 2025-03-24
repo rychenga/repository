@@ -2,3 +2,9 @@
 1.739259270244183e+09	info	輸入 SQL 查詢	{"SQL Commend: ": "SELECT * From book b\r\nWHERE `b`.`name`=?\r\n;"}
 1.7392592702447658e+09	info	執行 MySQL SQL 查詢	{"SQL": "SELECT * From book b\r\nWHERE `b`.`name`=?\r\n;"}
 1.7392592936041796e+09	error	failed to initialize database, got error Error 1045 (28000): Access denied for user 'root'@'172.17.0.1' (using password: YES)
+1.7428080539664018e+09	info	成功連線 MySQL!
+1.7428080539750865e+09	info	輸入 SQL 查詢	{"SQL Commend: ": "SELECT * From book b\r\nWHERE `b`.`name`=?\r\n;"}
+1.742808053975639e+09	info	執行 MySQL SQL 查詢	{"SQL": "SELECT * From book b\r\nWHERE `b`.`name`=?\r\n;"}
+1.7428169022406356e+09	info	成功連線 MySQL!
+1.7428169022561283e+09	info	輸入 SQL 查詢	{"SQL Commend: ": "SELECT * From book b\r\nWHERE `b`.`name`=?\r\n;"}
+1.742816902256666e+09	info	執行 MySQL SQL 查詢	{"SQL": "SELECT * From book b\r\nWHERE `b`.`name`=?\r\n;"}

@@ -7,6 +7,7 @@ import (
 	"log"
 	"os"
 
+	oracleDriver "github.com/godoes/gorm-oracle"
 	"github.com/jackc/pgx/v4/pgxpool"
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
@@ -26,13 +27,16 @@ type SqlFiles struct {
 
 // MySQL 連線資訊
 const (
-	mysqlusername = "root"
-	mysqlpassword = "Dev127336"
-	mysqlhostname = "127.0.0.1:3306"
-	mysqldbname   = "demo"
-	pgusername    = "admin"
-	pgpassword    = "pg123"
-	pgdbname      = "demo"
+	mysqlusername  = "root"
+	mysqlpassword  = "Dev127336"
+	mysqlhostname  = "127.0.0.1:3306"
+	mysqldbname    = "demo"
+	pgusername     = "admin"
+	pgpassword     = "pg123"
+	pgdbname       = "demo"
+	oracleDnsTns   = "127.0.0.1:1521/XEPDB1"
+	oracleName     = "demo"
+	oraclePassword = "demo1234"
 )
 
 // 記錄log用
@@ -157,6 +161,35 @@ func QueryPostgresSQL2(sqlQuery2 string) {
 	}
 }
 
+// 通用函數：獲取 Oracle DSN
+func getOracleDSN() string {
+	// return "oracle://wms:wms123@localhost:1521/XEPDB1"
+	return fmt.Sprintf("oracle://%s:%s@%s",
+		oracleName, oraclePassword, oracleDnsTns)
+}
+
+func QueryOracleSQL(sqlQuery string) {
+	dsn := getOracleDSN()
+	fmt.Println(dsn)
+	db, err := gorm.Open(oracleDriver.Open(dsn), &gorm.Config{})
+	if err != nil {
+		log.Fatalf("無法連接到 Oracle: %v", err)
+	}
+
+	var results []struct {
+		PARAMETER_NAME string `gorm:"column:PARAMETER_NAME"`
+		PARAMETER_TYPE string `gorm:"column:PARAMETER_TYPE"`
+	}
+	if err := db.Raw(sqlQuery, "WMSHM01").Scan(&results).Error; err != nil {
+		log.Fatalf("Oracle (GORM) 查詢失敗: %v", err)
+	}
+
+	fmt.Println("Oracle (GORM) 查詢結果:")
+	for _, result := range results {
+		fmt.Printf("Name: %s, Book Name: %s\n", result.PARAMETER_NAME, result.PARAMETER_TYPE)
+	}
+}
+
 func main() {
 	fmt.Println("Hello, world!")
 	// 讀取sql file功能
@@ -185,5 +218,16 @@ func main() {
 	sqlQuery2 := string(f2)
 	QueryPostgresSQL(sqlQuery2)  // 查詢PostgresSQL DB
 	QueryPostgresSQL2(sqlQuery2) // GORM 方法
+
+	// oracle 功能
+	// 讀取sql file功能
+	s3 := SqlFiles{embedFiles: embedFiles}
+	f3, err := s3.embedFiles.ReadFile("sql/oralce_demo.sql")
+	if err != nil {
+		fmt.Println(err)
+	}
+	sqlQuery3 := string(f3)
+	fmt.Println(sqlQuery3) //顯示sql內容
+	QueryOracleSQL(sqlQuery3)
 
 }
